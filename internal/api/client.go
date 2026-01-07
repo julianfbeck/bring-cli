@@ -219,11 +219,16 @@ func (c *Client) GetListItems(listUUID string) (*ListItemsResponse, error) {
 
 // UpdateItems performs batch update on list items.
 func (c *Client) UpdateItems(listUUID string, changes []ItemChange) error {
-	// Generate UUIDs for items that don't have one
+	// Set defaults for items
 	for i := range changes {
 		if changes[i].UUID == "" {
 			changes[i].UUID = uuid.New().String()
 		}
+		// Set location fields to defaults (required by API)
+		changes[i].Accuracy = "0.0"
+		changes[i].Altitude = "0.0"
+		changes[i].Latitude = "0.0"
+		changes[i].Longitude = "0.0"
 	}
 
 	req := BatchUpdateRequest{
@@ -237,8 +242,9 @@ func (c *Client) UpdateItems(listUUID string, changes []ItemChange) error {
 	}
 	defer resp.Body.Close()
 
+	body, _ := io.ReadAll(resp.Body)
+
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("failed to update items (status %d): %s", resp.StatusCode, string(body))
 	}
 
@@ -260,9 +266,33 @@ func (c *Client) CompleteItem(listUUID, itemName string) error {
 }
 
 // RemoveItem removes an item from a list.
+// It first fetches the list to find the item's UUID for proper removal.
 func (c *Client) RemoveItem(listUUID, itemName string) error {
+	// Fetch list to get item UUID
+	listItems, err := c.GetListItems(listUUID)
+	if err != nil {
+		return fmt.Errorf("fetching list items: %w", err)
+	}
+
+	// Find item UUID in purchase or recently lists
+	var itemUUID string
+	for _, item := range listItems.Items.Purchase {
+		if item.ItemID == itemName {
+			itemUUID = item.UUID
+			break
+		}
+	}
+	if itemUUID == "" {
+		for _, item := range listItems.Items.Recently {
+			if item.ItemID == itemName {
+				itemUUID = item.UUID
+				break
+			}
+		}
+	}
+
 	return c.UpdateItems(listUUID, []ItemChange{
-		{ItemID: itemName, Operation: OperationRemove},
+		{ItemID: itemName, UUID: itemUUID, Operation: OperationRemove},
 	})
 }
 

@@ -69,6 +69,10 @@ type ItemChange struct {
 	Spec      string `json:"spec"`
 	UUID      string `json:"uuid,omitempty"`
 	Operation string `json:"operation"`
+	Accuracy  string `json:"accuracy,omitempty"`
+	Altitude  string `json:"altitude,omitempty"`
+	Latitude  string `json:"latitude,omitempty"`
+	Longitude string `json:"longitude,omitempty"`
 }
 
 // BatchUpdateRequest represents the request body for batch updates.
