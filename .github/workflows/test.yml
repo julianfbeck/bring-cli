@@ -1,0 +1,28 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Run tests
+        env:
+          BRING_TEST_EMAIL: ${{ secrets.BRING_TEST_EMAIL }}
+          BRING_TEST_PASSWORD: ${{ secrets.BRING_TEST_PASSWORD }}
+          BRING_TEST_LIST_NAME: ${{ secrets.BRING_TEST_LIST_NAME }}
+        run: go test -v ./...
