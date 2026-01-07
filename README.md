@@ -4,11 +4,19 @@ A command-line interface for the [Bring!](https://www.getbring.com/) shopping li
 
 ## Installation
 
+### Homebrew (macOS)
+
+```bash
+brew install julianfbeck/tap/bring
+```
+
+### Go Install
+
 ```bash
 go install github.com/julianfbeck/bring-cli@latest
 ```
 
-Or build from source:
+### Build from Source
 
 ```bash
 git clone https://github.com/julianfbeck/bring-cli.git

@@ -1,0 +1,58 @@
+version: 2
+
+builds:
+  - id: bring
+    main: .
+    binary: bring
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/julianfbeck/bring-cli/cmd.version={{.Version}}
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+universal_binaries:
+  - id: bring-macos
+    ids:
+      - bring
+    name_template: bring
+    replace: true
+
+archives:
+  - id: default
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}-{{ if eq .Os "darwin" }}macos{{ else }}{{ .Os }}{{ end }}-{{ if eq .Arch "all" }}universal{{ else }}{{ .Arch }}{{ end }}
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+brews:
+  - name: bring
+    repository:
+      owner: julianfbeck
+      name: tap
+    homepage: "https://github.com/julianfbeck/bring-cli"
+    description: "CLI for the Bring! shopping list app"
+    license: "MIT"
+    install: |
+      bin.install "bring"
+    test: |
+      system "#{bin}/bring", "--version"
