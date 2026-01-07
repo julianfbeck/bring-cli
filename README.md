@@ -24,17 +24,29 @@ cd bring-cli
 go build -o bring .
 ```
 
-## Usage
+## Configuration
 
-### Authentication
+### Environment Variables (Recommended)
+
+Set these environment variables to use the CLI without interactive login:
 
 ```bash
-# Login with your Bring account
-bring login
-
-# Logout
-bring logout
+export BRING_EMAIL="your-email@example.com"
+export BRING_PASSWORD="your-password"
+export BRING_LIST="your-list-uuid"  # Optional: default list UUID
 ```
+
+### Interactive Login
+
+Alternatively, use the login command to store credentials:
+
+```bash
+bring login
+```
+
+Credentials are stored in `~/.config/bring-cli/config.yaml`.
+
+## Usage
 
 ### Managing Lists
 
@@ -42,7 +54,7 @@ bring logout
 # View all shopping lists
 bring lists
 
-# View items in a list (uses default list if not specified)
+# View items in a list (uses BRING_LIST or default)
 bring list
 bring list <list-uuid>
 ```
@@ -82,11 +94,16 @@ bring notify --type shopping-done
 -q, --quiet      Suppress non-essential output
     --json       Output as JSON (for scripting)
     --no-color   Disable color output
+-l, --list       Override list UUID for this command
 ```
 
-## Configuration
+## Environment Variables
 
-Credentials are stored in `~/.config/bring-cli/config.yaml`.
+| Variable | Description |
+|----------|-------------|
+| `BRING_EMAIL` | Your Bring account email |
+| `BRING_PASSWORD` | Your Bring account password |
+| `BRING_LIST` | Default list UUID (optional) |
 
 ## License
 

@@ -5,7 +5,6 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/julianfbeck/bring-cli/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -33,16 +32,13 @@ func runList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	listUUID := ""
+	argListUUID := ""
 	if len(args) > 0 {
-		listUUID = args[0]
-	} else {
-		creds, _ := config.GetCredentials()
-		if creds != nil && creds.DefaultList != "" {
-			listUUID = creds.DefaultList
-		} else {
-			return fmt.Errorf("no list specified and no default list configured")
-		}
+		argListUUID = args[0]
+	}
+	listUUID, err := getDefaultListUUID(argListUUID)
+	if err != nil {
+		return err
 	}
 
 	items, err := client.GetListItems(listUUID)

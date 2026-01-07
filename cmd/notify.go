@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/julianfbeck/bring-cli/internal/api"
-	"github.com/julianfbeck/bring-cli/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -44,14 +43,9 @@ func runNotify(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	listUUID := notifyList
-	if listUUID == "" {
-		creds, _ := config.GetCredentials()
-		if creds != nil && creds.DefaultList != "" {
-			listUUID = creds.DefaultList
-		} else {
-			return fmt.Errorf("no list specified and no default list configured")
-		}
+	listUUID, err := getDefaultListUUID(notifyList)
+	if err != nil {
+		return err
 	}
 
 	// Map friendly names to API constants
