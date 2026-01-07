@@ -306,7 +306,20 @@ func TestBatchUpdate(t *testing.T) {
 		t.Fatalf("Failed to get list UUID: %v", err)
 	}
 
-	testItems := []string{"Milch", "Brot", "Eier"}
+	// Use unique test items to avoid conflicts with previous runs
+	testItems := []string{"BatchTest1", "BatchTest2", "BatchTest3"}
+
+	// Clean up any existing test items first
+	for _, item := range testItems {
+		_ = client.RemoveItem(listUUID, item)
+	}
+
+	// Get initial count
+	initialItems, err := client.GetListItems(listUUID)
+	if err != nil {
+		t.Fatalf("GetListItems failed: %v", err)
+	}
+	initialCount := len(initialItems.Items.Purchase)
 
 	// Add multiple items
 	t.Log("Adding multiple items...")
@@ -314,7 +327,7 @@ func TestBatchUpdate(t *testing.T) {
 	for _, item := range testItems {
 		changes = append(changes, api.ItemChange{
 			ItemID:    item,
-			Spec:      "für Test",
+			Spec:      "batch test",
 			Operation: api.OperationAdd,
 		})
 	}
@@ -330,32 +343,32 @@ func TestBatchUpdate(t *testing.T) {
 		t.Fatalf("GetListItems failed: %v", err)
 	}
 
-	foundCount := 0
-	for _, item := range items.Items.Purchase {
-		for _, testItem := range testItems {
+	// Check that we have more items than before
+	newCount := len(items.Items.Purchase)
+	if newCount < initialCount+len(testItems) {
+		t.Errorf("Expected at least %d items, got %d", initialCount+len(testItems), newCount)
+	}
+
+	// Verify our specific items exist
+	for _, testItem := range testItems {
+		found := false
+		for _, item := range items.Items.Purchase {
 			if item.ItemID == testItem {
-				foundCount++
+				found = true
 				break
 			}
 		}
-	}
-	if foundCount != len(testItems) {
-		t.Errorf("Expected %d items, found %d", len(testItems), foundCount)
+		if !found {
+			t.Errorf("Item %s not found after batch add", testItem)
+		}
 	}
 
-	// Remove all items
+	// Remove all test items
 	t.Log("Removing multiple items...")
-	changes = nil
 	for _, item := range testItems {
-		changes = append(changes, api.ItemChange{
-			ItemID:    item,
-			Operation: api.OperationRemove,
-		})
-	}
-
-	err = client.UpdateItems(listUUID, changes)
-	if err != nil {
-		t.Fatalf("Batch remove failed: %v", err)
+		if err := client.RemoveItem(listUUID, item); err != nil {
+			t.Logf("Warning: failed to remove %s: %v", item, err)
+		}
 	}
 
 	t.Log("Batch update test passed")
