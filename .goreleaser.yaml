@@ -48,7 +48,7 @@ brews:
   - name: bring
     repository:
       owner: julianfbeck
-      name: tap
+      name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     homepage: "https://github.com/julianfbeck/bring-cli"
     description: "CLI for the Bring! shopping list app"
