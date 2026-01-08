@@ -71,6 +71,94 @@ bring notify --type shopping-done         # Tell others shopping is complete
 | `BRING_PASSWORD` | Your Bring account password |
 | `BRING_LIST` | Default list UUID (optional) |
 
+## Examples
+
+### List all shopping lists
+
+```bash
+$ bring lists
+NAME        UUID                                  ITEMS
+Zuhause     b63caa6a-7307-4786-9a9a-7cdc772a1763  5
+Einkaufen   a1b2c3d4-5678-90ab-cdef-1234567890ab  12
+```
+
+### View items in a list
+
+```bash
+$ bring list
+To Buy:
+  ITEM          SPECIFICATION
+  Milch         1.5% fett
+  Brot          Vollkorn
+  Eier          10 Stück
+
+Recently Completed:
+  ITEM          SPECIFICATION
+  Butter
+  Käse          Gouda
+```
+
+### Add items to shopping list
+
+```bash
+$ bring add Milch
+Added Milch to list
+
+$ bring add Brot --spec "Vollkorn, 500g"
+Added Brot (Vollkorn, 500g) to list
+
+$ bring add Eier Butter Käse
+Added 3 items to list: Eier, Butter, Käse
+```
+
+### Mark items as complete
+
+```bash
+$ bring complete Milch
+Completed Milch
+
+$ bring complete Eier Butter
+Completed 2 items: Eier, Butter
+```
+
+### Remove items
+
+```bash
+$ bring remove Brot
+Removed Brot from list
+
+$ bring remove Eier Käse
+Removed 2 items from list: Eier, Käse
+```
+
+### Send notifications
+
+```bash
+$ bring notify --type going-shopping
+Notified list users: Going shopping!
+
+$ bring notify --type shopping-done
+Notified list users: Shopping done!
+```
+
+### JSON output for scripting
+
+```bash
+$ bring list --json
+{
+  "uuid": "b63caa6a-7307-4786-9a9a-7cdc772a1763",
+  "items": {
+    "purchase": [
+      {"itemId": "Milch", "specification": "1.5% fett", "uuid": "..."},
+      {"itemId": "Brot", "specification": "Vollkorn", "uuid": "..."}
+    ],
+    "recently": [
+      {"itemId": "Butter", "specification": "", "uuid": "..."}
+    ]
+  }
+}
+```
+
 ## Notes
 
 - List UUIDs can be found with `bring lists`
