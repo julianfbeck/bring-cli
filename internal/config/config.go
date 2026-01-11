@@ -113,11 +113,20 @@ func ClearCredentials() error {
 func SetDefaultList(listUUID string) error {
 	cfg, err := Load()
 	if err != nil {
-		return err
+		cfg = &Config{}
 	}
 	if cfg.Credentials == nil {
-		return fmt.Errorf("not logged in")
+		cfg.Credentials = &api.Credentials{}
 	}
 	cfg.Credentials.DefaultList = listUUID
 	return Save(cfg)
+}
+
+// GetDefaultList returns the stored default list UUID.
+func GetDefaultList() string {
+	cfg, err := Load()
+	if err != nil || cfg.Credentials == nil {
+		return ""
+	}
+	return cfg.Credentials.DefaultList
 }

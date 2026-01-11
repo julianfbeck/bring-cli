@@ -52,6 +52,12 @@ bring notify --type changed-list          # Notify list was updated
 bring notify --type shopping-done         # Tell others shopping is complete
 ```
 
+## Configuration
+
+```bash
+bring config set-list <uuid-or-name>      # Set default list (by UUID or name)
+```
+
 ## Options
 
 | Flag | Description |
@@ -77,9 +83,9 @@ bring notify --type shopping-done         # Tell others shopping is complete
 
 ```bash
 $ bring lists
-NAME        UUID                                  ITEMS
-Zuhause     b63caa6a-7307-4786-9a9a-7cdc772a1763  5
-Einkaufen   a1b2c3d4-5678-90ab-cdef-1234567890ab  12
+NAME        UUID                                  DEFAULT
+Zuhause     b63caa6a-7307-4786-9a9a-7cdc772a1763  *
+Einkaufen   a1b2c3d4-5678-90ab-cdef-1234567890ab
 ```
 
 ### View items in a list
@@ -157,6 +163,16 @@ $ bring list --json
     ]
   }
 }
+```
+
+### Set default list
+
+```bash
+$ bring config set-list Zuhause
+Default list set to: Zuhause (b63caa6a-7307-4786-9a9a-7cdc772a1763)
+
+$ bring config set-list b63caa6a-7307-4786-9a9a-7cdc772a1763
+Default list set to: Zuhause (b63caa6a-7307-4786-9a9a-7cdc772a1763)
 ```
 
 ## Notes
