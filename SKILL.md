@@ -1,183 +1,114 @@
+---
+name: bring-cli
+description: "Use bring-cli to manage Bring! shopping lists from the terminal — add items, remove items, mark items complete, view shopping lists, send notifications to list members, and configure default lists via the bring CLI."
+---
+
 # bring-cli
 
-Use bring-cli when the user wants to manage their Bring! shopping list from the command line. This includes viewing lists, adding/removing items, marking items complete, and sending notifications to list members.
+Use bring-cli when the user wants to manage their Bring! shopping list from the command line — adding groceries, removing items, marking purchases complete, viewing lists, sending notifications, or configuring list defaults. Activate when the user mentions Bring!, shopping lists, grocery lists, or wants to add/remove/complete items on a shared list.
 
-## Auth
+## Prerequisites
 
-Set environment variables (recommended):
+Authentication is required before any command. Set environment variables (recommended):
+
 ```bash
 export BRING_EMAIL="your-email@example.com"
 export BRING_PASSWORD="your-password"
-export BRING_LIST="list-uuid"  # Optional default list
+export BRING_LIST="list-uuid"  # Optional: skip --list flag on every command
 ```
 
-Or use interactive login:
-```bash
-bring login
-bring logout
-```
+Or use interactive login (`bring login`). Credentials are stored in `~/.config/bring-cli/config.yaml`.
 
-## View Lists
+## Workflow
 
-```bash
-bring lists                    # Show all shopping lists
-bring list                     # Show items in default list
-bring list <list-uuid>         # Show items in specific list
-bring list --json              # JSON output for scripting
-```
+1. **Authenticate** — set `BRING_EMAIL` + `BRING_PASSWORD` env vars or run `bring login`
+2. **Find the list** — run `bring lists` to see all lists with UUIDs, then `bring config set-list <name-or-uuid>` to set a default
+3. **Manage items** — `bring add`, `bring complete`, or `bring remove` (supports multiple items in one command)
+4. **Notify others** — `bring notify --type going-shopping|changed-list|shopping-done`
+5. **Script with JSON** — append `--json` to any list command for machine-readable output
 
-## Manage Items
+## Key Commands
 
 ```bash
-# Add items
+# View all shopping lists
+bring lists
+
+# View items in default list (or specify UUID)
+bring list
+bring list <list-uuid>
+
+# Add items (with optional specification)
 bring add Milk
 bring add Bread --spec "2 loaves, whole wheat"
-bring add Eggs Butter Cheese   # Multiple items
+bring add Eggs Butter Cheese          # multiple items at once
 
 # Mark items complete (moves to recently bought)
 bring complete Milk
-bring complete Eggs Butter     # Multiple items
+bring complete Eggs Butter
 
 # Remove items entirely
 bring remove "Old item"
-bring remove Eggs Butter       # Multiple items
+bring remove Eggs Butter
+
+# Send notifications to list members
+bring notify --type going-shopping
+bring notify --type shopping-done
+
+# Set default list
+bring config set-list <uuid-or-name>
 ```
 
-## Notifications
-
-```bash
-bring notify                              # Default: going-shopping
-bring notify --type going-shopping        # Tell others you're heading to store
-bring notify --type changed-list          # Notify list was updated
-bring notify --type shopping-done         # Tell others shopping is complete
-```
-
-## Configuration
-
-```bash
-bring config set-list <uuid-or-name>      # Set default list (by UUID or name)
-```
-
-## Options
+## Key Flags
 
 | Flag | Description |
 |------|-------------|
-| `-h, --help` | Show help |
-| `--version` | Print version |
-| `-q, --quiet` | Suppress non-essential output |
-| `--json` | Output as JSON (for scripting) |
-| `--no-color` | Disable color output |
+| `--json` | Output as JSON for scripting |
 | `-l, --list` | Override list UUID for this command |
+| `-q, --quiet` | Suppress non-essential output |
+| `--no-color` | Disable color output |
+| `--spec` | Item specification (used with `bring add`) |
 
 ## Environment Variables
 
 | Variable | Description |
 |----------|-------------|
-| `BRING_EMAIL` | Your Bring account email |
-| `BRING_PASSWORD` | Your Bring account password |
+| `BRING_EMAIL` | Bring! account email |
+| `BRING_PASSWORD` | Bring! account password |
 | `BRING_LIST` | Default list UUID (optional) |
 
-## Examples
-
-### List all shopping lists
+## Example: Weekly Grocery Run
 
 ```bash
-$ bring lists
-NAME        UUID                                  DEFAULT
-Zuhause     b63caa6a-7307-4786-9a9a-7cdc772a1763  *
-Einkaufen   a1b2c3d4-5678-90ab-cdef-1234567890ab
-```
-
-### View items in a list
-
-```bash
+# 1. Check what's already on the list
 $ bring list
 To Buy:
   ITEM          SPECIFICATION
   Milch         1.5% fett
   Brot          Vollkorn
-  Eier          10 Stück
 
-Recently Completed:
-  ITEM          SPECIFICATION
-  Butter
-  Käse          Gouda
-```
+# 2. Add missing items
+$ bring add Eier --spec "10 Stueck"
+Added Eier (10 Stueck) to list
 
-### Add items to shopping list
+$ bring add Butter Kaese Joghurt
+Added 3 items to list: Butter, Kaese, Joghurt
 
-```bash
-$ bring add Milch
-Added Milch to list
-
-$ bring add Brot --spec "Vollkorn, 500g"
-Added Brot (Vollkorn, 500g) to list
-
-$ bring add Eier Butter Käse
-Added 3 items to list: Eier, Butter, Käse
-```
-
-### Mark items as complete
-
-```bash
-$ bring complete Milch
-Completed Milch
-
-$ bring complete Eier Butter
-Completed 2 items: Eier, Butter
-```
-
-### Remove items
-
-```bash
-$ bring remove Brot
-Removed Brot from list
-
-$ bring remove Eier Käse
-Removed 2 items from list: Eier, Käse
-```
-
-### Send notifications
-
-```bash
+# 3. Notify family you're heading out
 $ bring notify --type going-shopping
 Notified list users: Going shopping!
 
+# 4. Mark items as you pick them up
+$ bring complete Milch Brot Eier
+Completed 3 items: Milch, Brot, Eier
+
+# 5. Done — notify list members
 $ bring notify --type shopping-done
 Notified list users: Shopping done!
 ```
 
-### JSON output for scripting
+## Troubleshooting
 
-```bash
-$ bring list --json
-{
-  "uuid": "b63caa6a-7307-4786-9a9a-7cdc772a1763",
-  "items": {
-    "purchase": [
-      {"itemId": "Milch", "specification": "1.5% fett", "uuid": "..."},
-      {"itemId": "Brot", "specification": "Vollkorn", "uuid": "..."}
-    ],
-    "recently": [
-      {"itemId": "Butter", "specification": "", "uuid": "..."}
-    ]
-  }
-}
-```
-
-### Set default list
-
-```bash
-$ bring config set-list Zuhause
-Default list set to: Zuhause (b63caa6a-7307-4786-9a9a-7cdc772a1763)
-
-$ bring config set-list b63caa6a-7307-4786-9a9a-7cdc772a1763
-Default list set to: Zuhause (b63caa6a-7307-4786-9a9a-7cdc772a1763)
-```
-
-## Notes
-
-- List UUIDs can be found with `bring lists`
-- Items with spaces should be quoted: `bring add "Orange Juice"`
-- Use `--json` flag for machine-readable output when parsing
-- Credentials stored in `~/.config/bring-cli/config.yaml` if using `bring login`
+- **"not authenticated"** — run `bring login` or set `BRING_EMAIL` + `BRING_PASSWORD` env vars
+- **"list not found"** — run `bring lists` to get valid UUIDs, then `bring config set-list <uuid>`
+- **Items with spaces** — quote them: `bring add "Orange Juice"`
+- **JSON parsing** — use `bring list --json` for structured output (pipe to `jq` for filtering)
